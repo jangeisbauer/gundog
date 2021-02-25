@@ -1,5 +1,5 @@
 # gundog
-gundog - guided hunting in Microsoft Defender
+gundog - PowerShell based guided hunting in Microsoft 365 Defender
 
 Gundog provides you with guided hunting in Microsoft 365 Defender. Especially (if not only) for Email and 
 Endpoint Alerts at the moment.
