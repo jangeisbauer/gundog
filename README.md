@@ -4,55 +4,7 @@ gundog - PowerShell based guided hunting in Microsoft 365 Defender
 Gundog provides you with guided hunting in Microsoft 365 Defender. Especially (if not only) for Email and 
 Endpoint Alerts at the moment.
 
-                                                      	gggggg                   
-                                                   gggggg                              
-                                             gggggg                                    
-                                      ggggggg                                         
-         %ggggggg              ggggggggg                                             
-       gggggggggggg.   %ggggggg  gggg                                             
-        ggggggggggg ggggggg     gggg                                               
-        ggggggggggggggg        ggggg                                             
-         ggggggggggggg          ggggg                                            
-    ggggggggggggggggggggggggggggggg%                                            
-    gggggggggggggggggggggggggggggggg                                            
-   ggggggggggggggggggggggggggggg                                                
-    ggggggggggggggggggggg    g                                                  
-   gggggggggggggggggg      .                                                    
-    ggggggggggggggggggggg                                                       
-   gggggggggggggggggggg                                                         
-    ggggggggggggggggggg                                                         
-    gggggggggggggggggggg                                                        
-   *ggggggggggggggggggg                                                         
-   ggggggggggggggggggggg                                                        
-   gggggggggggggggggggg%                                                        
-      gggggggggggggggggg                                                        
-    ggggggggggggggggggggg                                                       
-    gggggggggggggggggggggg                                                      
-   gggggggggggg /ggggggggg                                                      
-    gggggggggg    ggggggggg                                       ,gggggg       
-   ggggggggggg     gggggggg                              .  gggggggggggggOggg/  
-   gggggggggg      gggggggg    %gggggggggggggggggggggggggggggggggggggggggg,*    
-    gggggggg       gggggggg     gggggggggggggggggggggggggggggggggg              
-   ggggggggg       gggggggg    gggggggggggggggggggggggggggggggg,                
-   gggggggg       %gggggggg   ggggggggggg    gggggggggggggggg%                  
-   ggggggg       ggggggggg   /gggggggggg/        ,ggggggggggg                   
-  gggggggg       gggggggg   gggg   gggg/              gg/  /gggg                
- ggggggg          ggggggg ggg      ggg        8I      gg       g                
-ggggggggg         .gggggggg      ggg          8I     *gg      gg                
- %gggggg          gggggggggg      gg          8I     *gg                        
- gggggg            *g/ ggggggg     .g         8I       gggg                     
-ggggg ,gg  gg      gg   ,ggg ggg.      .gggg.8I    ,ggggg.    ,gggg,gg          
-dP    Y8I  I8      8I  ,8   8P   8,   dP    Y8I   dP    Y8gggdP    Y8I          
-i8     ,8I  I8.    .8I  I8   8I   8I  i8     .8I  i8     ,8I i8     .8I         
-d8     d8I  d8b    d8b  dP   8I   Yb  d8     d8b  d8     d8  d8     d8I         
-  P Y8888P.8888P..Y88P..Y88P.   8I   .Y8P.Y8888P..Y8P.Y8888P   P.Y8888P.888          
-      .d8I.                                                         d8I          
-    .dP-8I                                                       ,dP.8I          
-   .8    8I                                                      .8   8I         
-    I8   8I                                                      I8   8I         
-    .8   8I                                                      .8   8I            
-     .Y8P.                                                        .Y8P           
-
+![alt text](http://100pcloud.com/vid-title.png)
 
 ## Functionality
 
