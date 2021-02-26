@@ -45,10 +45,10 @@ Optional parameters:
 saved to a global variable. If you restart gundog, it will not query all incidents again, unless you set forgetIncidents to true.)
 ```
 ## Requirements
-```
 Register an new App in AAD and give it the following permission:
 How to [register an app](https://docs.microsoft.com/en-us/windows/security/threat-protection/microsoft-defender-atp/exposed-apis-create-app-webapp "Microsoft")
 
+```
 Microsoft Graph
 
 - Directory.Read.All
