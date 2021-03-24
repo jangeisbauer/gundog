@@ -11,7 +11,7 @@ param(
 )
 #EndRegion
 #Region Description
-$versionText = "Guided hunting for M365 Defender | Version 0.1 (February 2021) @janvonkirchheim"
+$versionText = "Guided hunting for M365 Defender | Version 0.1.1 (March 2021) | Author: @janvonkirchheim"
 # 
 # gundog provides you with some guided hunting in Microsoft 365 Defender
 # espacially (if not only ;-)) for Email and Endpoint Alerts - with a great focus on 
@@ -45,7 +45,7 @@ $vulnerabilitiesOn = $true
 $signinsOn = $false
 $officeOn = $true
 $riskySignInsOn = $true
-$emailsOn = $true
+$emailsOn = $false
 
 #Number of Events (lines) displayed in overview - keep in mind, you always get all result via $object e.g. $Network
 $numberOfEvents = 30
@@ -86,7 +86,7 @@ $emailsT2 = "30"
 $emailsT2u = "minute"
 
 # do not display connections to those remote URLs (in DeviceNetworkEvents). Be careful with excluding values here - what you exclude, you will not see ;-)
-$notMatchThese = "microsoft\.com$|outlook\.com$|live\.com$|microsoftonline\.com$|skype\.com$|office365\.com$|office\.net$|windows\.net$|doubleclick\.net$|windows\.com$|office\.com$" 
+$notMatchThese = "microsoft\.com$|outlook\.com$|live\.com$|microsoftonline\.com$|skype\.com$|office365\.com$|edgesuite.\.net$|$>digicert\.com$|windows\.net$|doubleclick\.net$|windows\.com$|office\.com$|windowsupdate\.com$" 
 
 #EndRegion 
 #Region Logo & App Start 
@@ -635,16 +635,16 @@ function get-alertData {
         $emailAddress = $user.EmailAddress
 
         #associated hunting - main advanced hunting action starts here
-        #lets see if we use sha256 or sha1 
-        if($null -ne $alert.sha256) 
+        #lets see if we use sha1 or sha256 (prefer sha1 over sha256) 
+        if($null -ne $alert.sha1) 
         {
-            $global:fileHash = $alert.sha256
+            $global:fileHash = $alert.sha1
         } 
         else 
         {
-            if($null -ne $alert.sha1)
+            if($null -ne $alert.sha256)
             {
-                $global:fileHash = $alert.sha1
+                $global:fileHash = $alert.sha256
             }
         }
         #if we have a deviceID, hunt the: registry, network, processes and vulnerabilities (last one not via advanced hunting but API)
@@ -669,7 +669,8 @@ function get-alertData {
 
             if($vulnerabilitiesOn) { 
                 $vulnUrl="/vulnerabilities/machinesVulnerabilities?`$filter=machineId eq '$deviceId'"
-                $global:vulnerabilities =  get-DefenderAPIResult -tenantId $tenantId -clientID $clientID -clientSecret $clientSecret -topic "... getting all vulnerability info" -api $vulnUrl 
+                $rawVulnerabilities =  get-DefenderAPIResult -tenantId $tenantId -clientID $clientID -clientSecret $clientSecret -topic "... getting all vulnerability info" -api $vulnUrl 
+                $global:vulnerabilities = $rawVulnerabilities.value
                 
             } 
         }
@@ -731,12 +732,47 @@ function get-alertDataResults {
     {
         Write-Host ------------------------------------------------------------------------------------------------------------------------- -ForegroundColor red
         $tempAlertTitle = "[" + $plainalert.severity + "] " + $alert.Title   
-        Write-Host $tempAlertTitle         "(more info via `$alert)"  -ForegroundColor red       
-        Write-Host $alert.Timestamp
+        Write-Host "$tempAlertTitle (more info via `$alert)"  -ForegroundColor red       
+        $alertTime = get-date($alert.Timestamp)
+        Write-Host $alertTime
         Write-Host ------------------------------------------------------------------------------------------------------------------------- -ForegroundColor red
         Write-Host
         Write-Host "Category:" $alert.category "| Detection Source:" $alert.DetectionSource "| Investigation: " $plainalert.investigationState "| Status: " $plainalert.status
         Write-Host 
+    }
+    if($null -ne $plainalert)
+    {
+        Write-Host ------------------------------------------------------------------------------------------------------------------------- -ForegroundColor darkyellow
+        $incidentName = $Incident.incidentName 
+        Write-Host "Associated Incident: $incidentName (more info via `$Incident)"  -ForegroundColor darkyellow      
+        Write-Host ------------------------------------------------------------------------------------------------------------------------- -ForegroundColor darkyellow
+        Write-Host
+        $global:Incident = $allIncidents | Where-Object{$_.incidentid -eq $plainalert.incidentId}
+        Write-Host "Incident ID:" $Incident.incidentId " | Incident Severity:" $Incident.Severity  
+        Write-Host
+        if($Incident.alerts.count -gt 1)
+        {
+            Write-Host "Other Alerts in this Incident:" -ForegroundColor darkyellow
+            Write-Host
+            foreach ($incidentAlert in $Incident.alerts) {
+                if($incidentAlert.alertId -ne $plainalert.alertId)
+                {
+                    Write-Host "Alert Name:" $incidentAlert.title
+                    Write-Host "AlertID:" $incidentAlert.alertID
+                    Write-Host "Severity:" $incidentAlert.severity
+                    Write-Host "Service Source:" $incidentAlert.serviceSource
+                    Write-Host "Creation Time:" $incidentAlert.creationTime
+                    Write-Host "Status:" $incidentAlert.status
+                    write-Host "Classification:" $incidentAlert.classification
+                    write-Host "Assigned To:" $incidentAlert.assignedTo
+                    Write-Host
+                }
+            }
+        }
+        else {
+            Write-Host "The alert is the only alert in this incident."
+            Write-Host 
+        }
     }
     if($null -ne $alert.EmailSubject)
     {
@@ -756,7 +792,7 @@ function get-alertDataResults {
     if($null -ne $alert.Entities.ProcessCommandLine)
     {
         Write-Host ------------------------------------------------------------------------------------------------------------------------- -ForegroundColor green
-        Write-Host "Process Alert                                                                                    (more info via `$alert)"  -ForegroundColor green   
+        Write-Host "Process Alert                                                                                   (more info via `$alert)"  -ForegroundColor green   
         Write-Host ------------------------------------------------------------------------------------------------------------------------- -ForegroundColor green
         Write-Host "File Name:" $alert.Entities.fileName
         Write-Host "File Path:" $alert.Entities.filePath
@@ -766,7 +802,7 @@ function get-alertDataResults {
     if($null -ne $alert.filename -or $null -ne $alert.sha256 -or $null -ne $alert.folderpath -or $null -ne $alert.sha1)
     {
         Write-Host ------------------------------------------------------------------------------------------------------------------------- -ForegroundColor green
-        Write-Host "Files                                                               (more info via `$filesApiInfo and `$filesApiStats)"  -ForegroundColor green   
+        Write-Host "Files                                                                (more info via `$filesApiInfo and `$filesApiStats)"  -ForegroundColor green   
         Write-Host ------------------------------------------------------------------------------------------------------------------------- -ForegroundColor green
         Write-Host "FileName:" $alert.filename 
         Write-Host "Folderpath:" $alert.folderpath 
@@ -980,7 +1016,7 @@ function get-alertDataResults {
         Write-Host ------------------------------------------------------------------------------------------------------------------------- -ForegroundColor green
         write-host "Vulnerabilities                                                                       (more info via `$vulnerabilities)" -ForegroundColor green
         Write-Host ------------------------------------------------------------------------------------------------------------------------- -ForegroundColor green
-        $criticalVuln=$vulnerabilities.value | Where-Object {$_.severity -eq "Critical"} | Format-Table cveId, productName, ProductVendor, ProductVersion, severity | Out-Host
+        $criticalVuln=$vulnerabilities | Where-Object {$_.severity -eq "Critical"} | Format-Table cveId, productName, ProductVendor, ProductVersion, severity | Out-Host
         $criticalVuln
         Write-Host
         if($criticalVuln.Count -eq 0)
