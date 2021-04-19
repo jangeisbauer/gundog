@@ -11,7 +11,7 @@ param(
 )
 #EndRegion
 #Region Description
-$versionText = "Guided hunting for M365 Defender | Version 0.1.1 (March 2021) | Author: @janvonkirchheim"
+$versionText = "Guided hunting for M365 Defender | Version 0.1.2 (March 2021) | Author: @janvonkirchheim"
 # 
 # gundog provides you with some guided hunting in Microsoft 365 Defender
 # espacially (if not only ;-)) for Email and Endpoint Alerts - with a great focus on 
@@ -671,7 +671,6 @@ function get-alertData {
                 $vulnUrl="/vulnerabilities/machinesVulnerabilities?`$filter=machineId eq '$deviceId'"
                 $rawVulnerabilities =  get-DefenderAPIResult -tenantId $tenantId -clientID $clientID -clientSecret $clientSecret -topic "... getting all vulnerability info" -api $vulnUrl 
                 $global:vulnerabilities = $rawVulnerabilities.value
-                
             } 
         }
         #getting fileinfo and filestats from MD API
@@ -988,7 +987,7 @@ function get-alertDataResults {
         Write-Host ------------------------------------------------------------------------------------------------------------------------- -ForegroundColor green
         write-host "Risky SignIns                                                                            (more info via `$riskySignIns)" -ForegroundColor green
         Write-Host ------------------------------------------------------------------------------------------------------------------------- -ForegroundColor green
-        $riskySignIns.value | Sort-Object Timestamp -Descending | Format-Table activityDateTime, riskType, riskEvent, riskLevel, @{Name="City";expression={$_.location.city}}, @{Name="State";expression={$_.location.state}}, @{Name="Country";expression={$_.location.countryorregion}} | Out-Host
+        $riskySignIns.value | Sort-Object Timestamp -Descending | Format-Table @{Name="Time";expression={get-date($_.activityDateTime)}}, riskType, riskEvent, riskLevel, @{Name="City";expression={$_.location.city}}, @{Name="State";expression={$_.location.state}}, @{Name="Country";expression={$_.location.countryorregion}} | Out-Host
         Write-Host
         if($riskySignIns.value.Count -eq 0)
         {
@@ -1002,14 +1001,14 @@ function get-alertDataResults {
         Write-Host ------------------------------------------------------------------------------------------------------------------------- -ForegroundColor green
         write-host "Network                                                                                       (more info via `$Network)" -ForegroundColor green
         Write-Host ------------------------------------------------------------------------------------------------------------------------- -ForegroundColor green
-        $network | Select-Object -Last $numberOfEvents -ErrorAction SilentlyContinue | Sort-Object Timestamp -Descending | Where-Object{$_.remoteurl -ne "" -and $_.remoteurl -notmatch $notMatchThese} | Format-Table Timestamp,InitiatingProcessFileName, @{Name="Country";expression={($ipGeoInfo -match $_.RemoteIP).Country}},@{Name="City";expression={($ipGeoInfo -match $_.RemoteIP).City}}, RemoteIP, RemotePort, RemoteUrl | Out-Host
+        $network | Select-Object -Last $numberOfEvents -ErrorAction SilentlyContinue | Sort-Object Timestamp -Descending | Where-Object{$_.remoteurl -ne "" -and $_.remoteurl -notmatch $notMatchThese} | Format-Table @{Name="Time";expression={get-date($_.TimeStamp)}},InitiatingProcessFileName, @{Name="Country";expression={($ipGeoInfo -match $_.RemoteIP).Country}},@{Name="City";expression={($ipGeoInfo -match $_.RemoteIP).City}}, RemoteIP, RemotePort, RemoteUrl | Out-Host
     }
     if($null -ne $processes)
     {
         Write-Host ------------------------------------------------------------------------------------------------------------------------- -ForegroundColor green
         write-host "Processes                                                                                   (more info via `$Processes)" -ForegroundColor green
         Write-Host ------------------------------------------------------------------------------------------------------------------------- -ForegroundColor green
-        $processes | Select-Object -Last $numberOfEvents -ErrorAction SilentlyContinue | Sort-Object Timestamp -Descending | Format-Table Timestamp, ActionType, FolderPath, ProcessCommandLine, InitiatingProcessAccountName | Out-Host
+        $processes | Select-Object -Last $numberOfEvents -ErrorAction SilentlyContinue | Sort-Object Timestamp -Descending | Format-Table @{Name="Time";expression={get-date($_.TimeStamp)}}, ActionType, FolderPath, ProcessCommandLine, InitiatingProcessAccountName | Out-Host
     }
     if($null -ne $vulnerabilities)
     {
@@ -1032,35 +1031,35 @@ function get-alertDataResults {
         write-host "SignIns                                                                                       (more info via `$signins)" -ForegroundColor green
         Write-Host ------------------------------------------------------------------------------------------------------------------------- -ForegroundColor green
         Write-Host "User City:" $user.city "User Country:" $user.country -ForegroundColor yellow
-        $signins | Select-Object -Last $numberOfEvents -ErrorAction SilentlyContinue | Sort-Object Timestamp -Descending | Format-Table Timestamp, Application, LogonType, AccountUpn, DeviceName, Country, City, IPAddress  | Out-Host
+        $signins | Select-Object -Last $numberOfEvents -ErrorAction SilentlyContinue | Sort-Object Timestamp -Descending | Format-Table @{Name="Time";expression={get-date($_.TimeStamp)}}, Application, LogonType, AccountUpn, DeviceName, Country, City, IPAddress  | Out-Host
     }
     if($null -ne $emails)
     {
         Write-Host ------------------------------------------------------------------------------------------------------------------------- -ForegroundColor green
         write-host "Emails                                                                                         (more info via `$emails)" -ForegroundColor green
         Write-Host ------------------------------------------------------------------------------------------------------------------------- -ForegroundColor green
-        $emails | Select-Object -Last $numberOfEvents -ErrorAction SilentlyContinue | Sort-Object Timestamp -Descending | Format-Table Timestamp, SenderFromAddress, RecipientEmailAddress, Subject, Url, FileName  | Out-Host
+        $emails | Select-Object -Last $numberOfEvents -ErrorAction SilentlyContinue | Sort-Object Timestamp -Descending | Format-Table @{Name="Time";expression={get-date($_.TimeStamp)}}, SenderFromAddress, RecipientEmailAddress, Subject, Url, FileName  | Out-Host
     }
     if($null -ne $office)
     {
         Write-Host ------------------------------------------------------------------------------------------------------------------------- -ForegroundColor green
         write-host "Office                                                                                         (more info via `$Office)" -ForegroundColor green
         Write-Host ------------------------------------------------------------------------------------------------------------------------- -ForegroundColor green
-        $office | Select-Object -Last $numberOfEvents -ErrorAction SilentlyContinue | Sort-Object Timestamp -Descending | Format-Table Timestamp, Application, FileName, DeviceName, ISP | Out-Host
+        $office | Select-Object -Last $numberOfEvents -ErrorAction SilentlyContinue | Sort-Object Timestamp -Descending | Format-Table @{Name="Time";expression={get-date($_.TimeStamp)}}, Application, FileName, DeviceName, ISP | Out-Host
     }
     if($null -ne $allalerts)
     {
         Write-Host ------------------------------------------------------------------------------------------------------------------------- -ForegroundColor green
         write-host "All Alerts                                                                                  (more info via `$allalerts)" -ForegroundColor green
         Write-Host ------------------------------------------------------------------------------------------------------------------------- -ForegroundColor green
-        $allIncidents.alerts | Where-Object{$_.devices.devicednsname -eq $alert.devicename -or $_.entities.accountname -eq $alert.accountname} | Format-Table creationTime, Title, Severity, status, DetectionSource | out-host
+        $allIncidents.alerts | Where-Object{$_.devices.devicednsname -eq $alert.devicename -or $_.entities.accountname -eq $alert.accountname} | Format-Table @{Name="Time";expression={get-date($_.creationTime)}}, Title, Severity, status, DetectionSource | out-host
     }
     if($null -ne $registry)
     {
         Write-Host ------------------------------------------------------------------------------------------------------------------------- -ForegroundColor green
         write-host "Registry                                                                                     (more info via `$Registry)" -ForegroundColor green
         Write-Host ------------------------------------------------------------------------------------------------------------------------- -ForegroundColor green
-        $registry | Select-Object -Last $numberOfEvents -ErrorAction SilentlyContinue | Where-Object {$_.RegistryValueName -ne ""} | Sort-Object Timestamp -Descending | Format-Table Timestamp, RegKey, RegistryValueName, RegistryValueData, InitiatingProcessCommandLine | Out-Host
+        $registry | Select-Object -Last $numberOfEvents -ErrorAction SilentlyContinue | Where-Object {$_.RegistryValueName -ne ""} | Sort-Object Timestamp -Descending | Format-Table @{Name="Time";expression={get-date($_.TimeStamp)}}, RegKey, RegistryValueName, RegistryValueData, InitiatingProcessCommandLine | Out-Host
     }
 }
 #Region Output
