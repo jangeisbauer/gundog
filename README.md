@@ -61,10 +61,10 @@ Microsoft Threat Protection
 
 - AdvancedHunting.ReadAll
 - Incident.Read.All
-- Windows Defender ATP
 
-AdvancedQuery.Read.All
+Windows Defender ATP
 
+- AdvancedQuery.Read.All
 - Alert.Read.All
 - File.Read.All
 - Ip.Read.All
